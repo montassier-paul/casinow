@@ -15,97 +15,107 @@ const Trend = require("../models/Trend")
 //create a casino
 router.post("/", async (req, res) => {
 
-    const casino = await Casino.findOne({name : req.body.name});
+  const casino = await Casino.findOne({ name: req.body.name });
 
-    if(casino){
-        res.status(404).json("This casino does exist in the database") 
-    }else{
-        try {
-            const newCasino = new Casino({
-              name: req.body.name,
-              adresse : req.body.adresse,
-            });
-      
-        
-            const casino = await newCasino.save();
-            res.status(200).json({"msg" : "Casino has been created", "data" : casino 
-            })
-        
-          } catch (err) {
-            res.status(500).json(err)
-          }
+  if (casino) {
+    res.status(404).json("This casino does exist in the database")
+  } else {
+    try {
+      const newCasino = new Casino({
+        name: req.body.name,
+        adresse: req.body.adresse,
+      });
+
+
+      const casino = await newCasino.save();
+      res.status(200).json({
+        "msg": "Casino has been created", "data": casino
+      })
+
+    } catch (err) {
+      res.status(500).json(err)
     }
-  });
+  }
+});
 
 // get a casino by id with projection
 router.get("/casino/:id", async (req, res) => {
 
-    try {
+  try {
 
-      const casino = await Casino.findById(req.params.id, req.body.projection);
+    projection = {}
 
-      if(casino){
-        res.status(200).json({"msg" : "the casino sought", "data" : casino});
+    Object.entries(req.query).forEach(([key, value]) => {
+      console.log(key, value);
+      if (key !== "limit" & key !== "offset") {
+        projection[key] = value
       }
-      else{
-        res.status(404).json({"msg" : "this casino id doesn't exist"});
-      }
+    })
 
-    } catch (err) {
+    const casino = await Casino.findById(req.params.id, projection);
 
-      res.status(500).json(err);
+    if (casino) {
+      res.status(200).json({ "msg": "the casino sought", "data": casino });
     }
-  });
+    else {
+      res.status(404).json({ "msg": "this casino id doesn't exist" });
+    }
+
+  } catch (err) {
+
+    res.status(500).json(err);
+  }
+});
 
 // update a casino by id
 router.put("/casino/:id", async (req, res) => {
 
-    try {
-      const casino = await Casino.findById(req.params.id);
-      if (casino){
-        await Casino.findByIdAndUpdate(req.params.id, {
+  try {
+    const casino = await Casino.findById(req.params.id);
+    if (casino) {
+      await Casino.findByIdAndUpdate(req.params.id, {
         $set: req.body,
-        });
+      });
 
-        res.status(200).json({"msg" : "Casino has been updated"});
-      }
-      else{
-        res.status(404).json({"msg" :"This casino doens't exist"});
-      }
-    } catch (err) {
-    return res.status(500).json(err);
+      res.status(200).json({ "msg": "Casino has been updated" });
     }
-  });
+    else {
+      res.status(404).json({ "msg": "This casino doens't exist" });
+    }
+  } catch (err) {
+    return res.status(500).json(err);
+  }
+});
 
 // update tournament from casino 
 router.put("/casino/tournament/:id", async (req, res) => {
 
-    try {
-      const casino = await Casino.findById(req.params.id);
-      const tournament = await Tournament.findById(req.body.tournamentId);
+  try {
+    const casino = await Casino.findById(req.params.id);
+    const tournament = await Tournament.findById(req.body.tournamentId);
 
-      if(casino && tournament){
-        if (!casino.tournamentsId.includes(req.body.tournamentId)) {
-            await casino.updateOne({ $push: { tournamentsId: req.body.tournamentId } });
-            res.status(200).json({"msg" :"tournament has been added"});
-        } else {
-          await casino.updateOne({ $pull: { tournamentsId: req.body.tournamentId } }); 
-          res.status(200).json({"msg" :"tournament has been removed"});
-        }
+    if (casino && tournament) {
+      if (!casino.tournamentsId.includes(req.body.tournamentId)) {
+        await casino.updateOne({ $push: { tournamentsId: req.body.tournamentId } });
+        res.status(200).json({ "msg": "tournament has been added" });
+      } else {
+        await casino.updateOne({ $pull: { tournamentsId: req.body.tournamentId } });
+        res.status(200).json({ "msg": "tournament has been removed" });
       }
-      else {
-        if(!casino){
-          res.status(404).json({"msg" :"This casino doens't exist"});
-        }
-        if(!tournament){
-          res.status(404).json({"msg" :"This tournament doens't exist"});
-        }
-
-        
-      }
-    } catch (err) {
-      res.status(500).json(err);
     }
+    else {
+      if (!casino) {
+        res.status(404).json({ "msg": "This casino doens't exist" });
+      }
+      if (!tournament) {
+        res.status(404).json({ "msg": "This tournament doens't exist" });
+      }
+
+
+    }
+  } catch (err) {
+    res.status(500).json(err);
+  }
 
 });
 
@@ -114,17 +124,17 @@ router.put("/casino/machine/:id", async (req, res) => {
 
   try {
     const casino = await Casino.findById(req.params.id);
-    if(casino){
+    if (casino) {
       if (!casino.machinesId.includes(req.body.machineId)) {
-          await casino.updateOne({ $push: { machinesId: req.body.machineId } });
-          res.status(200).json({"msg" :"machine has been added"});
+        await casino.updateOne({ $push: { machinesId: req.body.machineId } });
+        res.status(200).json({ "msg": "machine has been added" });
       } else {
         await casino.updateOne({ $pull: { machinesId: req.body.machineId } })
-        res.status(200).json({"msg" :"machine has been removed"});
+        res.status(200).json({ "msg": "machine has been removed" });
       }
     }
     else {
-      res.status(404).json({"msg" :"This casino doens't exist"});
+      res.status(404).json({ "msg": "This casino doens't exist" });
     }
   } catch (err) {
     res.status(500).json(err);
@@ -137,17 +147,17 @@ router.put("/casino/table/:id", async (req, res) => {
 
   try {
     const casino = await Casino.findById(req.params.id);
-    if(casino){
+    if (casino) {
       if (!casino.tablesId.includes(req.body.tableId)) {
-          await casino.updateOne({ $push: { tablesId: req.body.tableId } });
-          res.status(200).json({"msg" :"table has been added"});
+        await casino.updateOne({ $push: { tablesId: req.body.tableId } });
+        res.status(200).json({ "msg": "table has been added" });
       } else {
         await casino.updateOne({ $pull: { tablesId: req.body.tableId } })
-        res.status(200).json({"msg" :"table has been removed"});
+        res.status(200).json({ "msg": "table has been removed" });
       }
     }
     else {
-      res.status(404).json({"msg" :"This casino doens't exist"});
+      res.status(404).json({ "msg": "This casino doens't exist" });
     }
 
   } catch (err) {
@@ -161,17 +171,17 @@ router.put("/casino/event/:id", async (req, res) => {
 
   try {
     const casino = await Casino.findById(req.params.id);
-    if(casino){
+    if (casino) {
       if (!casino.eventsId.includes(req.body.eventId)) {
-          await casino.updateOne({ $push: { eventsId: req.body.eventId } });
-          res.status(200).json({"msg" :"event has been added"});
+        await casino.updateOne({ $push: { eventsId: req.body.eventId } });
+        res.status(200).json({ "msg": "event has been added" });
       } else {
         await casino.updateOne({ $pull: { eventsId: req.body.eventId } })
-        res.status(200).json({"msg" :"event has been removed"});
+        res.status(200).json({ "msg": "event has been removed" });
       }
     }
     else {
-      res.status(404).json({"msg" :"This casino doens't exist"});
+      res.status(404).json({ "msg": "This casino doens't exist" });
     }
   } catch (err) {
     res.status(500).json(err);
@@ -187,9 +197,9 @@ router.put("/casino/games/:id", async (req, res) => {
 
     const checkCasino = await Casino.findById(req.params.id);
 
-    if(checkCasino){
-      const casino = await Casino.findOne({ "_id": req.params.id, "games.game": req.body.game})
-      if(casino){
+    if (checkCasino) {
+      const casino = await Casino.findOne({ "_id": req.params.id, "games.game": req.body.game })
+      if (casino) {
 
         const query = { "_id": req.params.id, "games.game": req.body.game };
         const updateDocument = {
@@ -201,19 +211,19 @@ router.put("/casino/games/:id", async (req, res) => {
       }
       else {
 
-        const query = {"_id": req.params.id};
+        const query = { "_id": req.params.id };
         const updateDocument = {
-          $push: { "games": {game :req.body.game, numbers:req.body.numbers } }
+          $push: { "games": { game: req.body.game, numbers: req.body.numbers } }
         };
 
         const result = await Casino.updateOne(query, updateDocument);
 
       }
 
-      res.status(200).json({"msg" :"Casino games has been updated"});
+      res.status(200).json({ "msg": "Casino games has been updated" });
     }
     else {
-      res.status(404).json({"msg" :"This casino doens't exist"});
+      res.status(404).json({ "msg": "This casino doens't exist" });
     }
   } catch (err) {
     res.status(500).json(err);
@@ -227,21 +237,21 @@ router.put("/casino/hours/:id", async (req, res) => {
   try {
     const checkCasino = await Casino.findById(req.params.id);
 
-    if(checkCasino) {
-      const query = { "_id": req.params.id, "hours.day": req.body.day};
+    if (checkCasino) {
+      const query = { "_id": req.params.id, "hours.day": req.body.day };
       const updateDocument = {
-        $set: { "hours.$.opening": req.body.opening, "hours.$.ending": req.body.ending  }
+        $set: { "hours.$.opening": req.body.opening, "hours.$.ending": req.body.ending }
       };
       const result = await Casino.updateOne(query, updateDocument);
 
-    
 
-      res.status(200).json({"msg" :"Casino hours has been updated"});
+
+      res.status(200).json({ "msg": "Casino hours has been updated" });
     }
     else {
-      res.status(404).json({"msg" :"This casino doens't exist"});
+      res.status(404).json({ "msg": "This casino doens't exist" });
     }
-    
+
   } catch (err) {
     res.status(500).json(err);
   }
@@ -251,73 +261,93 @@ router.put("/casino/hours/:id", async (req, res) => {
 // delete a casino by id
 router.delete("/casino/:id", async (req, res) => {
 
-   
-    try {
+
+  try {
     const casino = await Casino.findById(req.params.id);
 
-      if(casino) {
+    if (casino) {
 
-        const tournamentsId = casino.tournamentsId; 
-        tournamentsId.forEach(async (tournamentId) => 
-          await Tournament.findByIdAndDelete(tournamentId)
-        ); 
+      const tournamentsId = casino.tournamentsId;
+      tournamentsId.forEach(async (tournamentId) =>
+        await Tournament.findByIdAndDelete(tournamentId)
+      );
 
-        const evenementsId = casino.eventsId; 
-        evenementsId.forEach(async (evenementId) => 
-          await Evenement.findByIdAndDelete(evenementId)
-        ); 
+      const evenementsId = casino.eventsId;
+      evenementsId.forEach(async (evenementId) =>
+        await Evenement.findByIdAndDelete(evenementId)
+      );
 
-        const tablesId = casino.tablesId; 
-        tablesId.forEach(async (tableId) => 
-          await Table.findByIdAndDelete(tableId)
-        ); 
+      const tablesId = casino.tablesId;
+      tablesId.forEach(async (tableId) =>
+        await Table.findByIdAndDelete(tableId)
+      );
 
-        const machinesId = casino.machinesId; 
-        machinesId.forEach(async (machineId) => 
-          await Machine.findByIdAndDelete(machineId)
-        ); 
+      const machinesId = casino.machinesId;
+      machinesId.forEach(async (machineId) =>
+        await Machine.findByIdAndDelete(machineId)
+      );
 
-        const trendsId = casino.trendsId; 
-        trendsId.forEach(async (trendId) => 
-          await Trend.findByIdAndDelete(trendId)
-        ); 
+      const trendsId = casino.trendsId;
+      trendsId.forEach(async (trendId) =>
+        await Trend.findByIdAndDelete(trendId)
+      );
 
 
 
-        await Casino.findByIdAndDelete(req.params.id);
+      await Casino.findByIdAndDelete(req.params.id);
 
-        const checkCasino = await Casino.findById(req.params.id); 
+      const checkCasino = await Casino.findById(req.params.id);
 
-        if (!checkCasino){
-          res.status(200).json({"msg" : "casino has been deleted"});
-        }
-        else {
-          res.status(200).json({"msg" : "casino hasn't been deleted"});
-        }
+      if (!checkCasino) {
+        res.status(200).json({ "msg": "casino has been deleted" });
       }
-      else{
-        res.status(404).json({"msg" :"This casino doens't exist"});
+      else {
+        res.status(200).json({ "msg": "casino hasn't been deleted" });
       }
-
-    } catch (err) {
-    return res.status(500).json(err);
+    }
+    else {
+      res.status(404).json({ "msg": "This casino doens't exist" });
     }
 
-  });
+  } catch (err) {
+    return res.status(500).json(err);
+  }
+
+});
 
 // get all casino with query - projection - scroll management
 router.get("/full/", async (req, res) => {
 
 
-    try { 
-      const casinos = await Casino.find(req.body.query, req.body.projection).skip(req.body.offset).limit(req.body.limit); 
-      res.status(200).json({"msg" : "all casinos data", "data" : casinos});
+  try {
 
-    } catch (err) {
+    projection = {}
+    query = {}
 
-      res.status(500).json(err);
-    }
-  });
+    // Update header text
+
+    Object.entries(req.query).forEach(([key, value]) => {
+      console.log(key, value);
+      if (key.substring(0,2) === "p_") {
+        projection[key.substring(2,)] = Number(value)
+      }
+
+      if (key.substring(0,2) === "q_") {
+        query[key.substring(2,)] = Number(value)
+      }
+
+
+    });
+
+
+    const casinos = await Casino.find(query, projection).skip(req.query.offset).limit(req.query.limit);
+    res.status(200).json({ "msg": "all casinos data", "data": casinos });
+
+  } catch (err) {
+
+    res.status(500).json(err);
+  }
+});
 
 
 module.exports = router; 

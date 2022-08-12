@@ -42,7 +42,16 @@ router.get("/table/:id", async (req, res) => {
 
     try {
 
-      const table = await Table.findById(req.params.id, req.body.projection);
+      projection = {}
+
+      Object.entries(req.query).forEach(([key, value]) => {
+        console.log(key, value);
+        if (key !== "limit" & key !== "offset") {
+          projection[key] = value
+        }
+      })
+
+      const table = await Table.findById(req.params.id, projection);
 
       if(table){
         res.status(200).json({"msg" : "the table sought", "data" : table});
@@ -124,7 +133,26 @@ router.delete("/:id",async (req, res) => {
 router.get("/full/", async (req, res) => {
 
     try {
-      const tables = await Table.find(req.body.query, req.body.projection).skip(req.body.offset).limit(req.body.limit); 
+
+      projection = {}
+    query = {}
+
+    // Update header text
+
+    Object.entries(req.query).forEach(([key, value]) => {
+      console.log(key, value);
+      if (key.substring(0,2) === "p_") {
+        projection[key.substring(2,)] = Number(value)
+      }
+
+      if (key.substring(0,2) === "q_") {
+        query[key.substring(2,)] = Number(value)
+      }
+
+
+    });
+
+      const tables = await Table.find(query, projection).skip(req.query.offset).limit(req.query.limit); 
       res.status(200).json({"msg" : "all tables data", "data" : tables});
 
     } catch (err) {

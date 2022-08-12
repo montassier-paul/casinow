@@ -8,7 +8,7 @@ const EvenementSchema = new mongoose.Schema(
 
       title : {
         type : String, 
-        requied : true
+        required : true
       },
 
       img : {

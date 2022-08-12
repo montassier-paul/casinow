@@ -48,6 +48,10 @@ const CasinoSchema = new mongoose.Schema(
         type : Boolean, 
       },
 
+      parking : {
+        type : Boolean, 
+      },
+
       desc : {
         type : String, 
       },

@@ -12,6 +12,7 @@ const TrendSchema = new mongoose.Schema(
 
       date : {
         type : String, 
+        required : true,  
       },
 
       title : {

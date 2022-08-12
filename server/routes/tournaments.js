@@ -42,7 +42,17 @@ router.get("/tournament/:id", async (req, res) => {
 
     try {
 
-      const tournament = await Tournament.findById(req.params.id, req.body.projection);
+      projection = {}
+
+      Object.entries(req.query).forEach(([key, value]) => {
+        console.log(key, value);
+        if (key !== "limit" & key !== "offset") {
+          projection[key] = value
+        }
+      })
+
+
+      const tournament = await Tournament.findById(req.params.id, projection);
 
       if(tournament){
         res.status(200).json({"msg" : "the tournament sought", "data" : tournament});
@@ -124,7 +134,26 @@ router.delete("/:id",async (req, res) => {
 router.get("/full/", async (req, res) => {
 
     try {
-      const tournaments = await Tournament.find(req.body.query, req.body.projection).skip(req.body.offset).limit(req.body.limit); 
+
+      projection = {}
+    query = {}
+
+    // Update header text
+
+    Object.entries(req.query).forEach(([key, value]) => {
+      console.log(key, value);
+      if (key.substring(0,2) === "p_") {
+        projection[key.substring(2,)] = Number(value)
+      }
+
+      if (key.substring(0,2) === "q_") {
+        query[key.substring(2,)] = Number(value)
+      }
+
+
+    });
+
+      const tournaments = await Tournament.find(query, projection).skip(req.query.offset).limit(req.query.limit); 
       res.status(200).json({"msg" : "all tournaments data", "data" : tournaments});
 
     } catch (err) {
