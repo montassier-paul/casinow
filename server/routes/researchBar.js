@@ -9,18 +9,41 @@ router.get("/casinos/", async (req, res) => {
 
     try {
 
+        const names = []
+        const adresses = []
+        const regions = []
+        const groupes = []
+        const departements = []
+        const villes = []
 
-        const researches = await Casino.find({}, { name: 1, adresse: 1, region: 1, groupe: 1, departement: 1, ville: 1 }).then(casinos =>
+
+        await Casino.find({}, { name: 1, adresse: 1, region: 1, groupe: 1, departement: 1, ville: 1 }).then(casinos =>
             casinos.map(casino => {
                 let { _id, ...casinoData } = casino._doc;
-                return Object.values(casinoData);
+                names.push(casinoData.name)
+                adresses.push(casinoData.adresse)
+                regions.push(casinoData.region)
+                groupes.push(casinoData.groupe)
+                departements.push(casinoData.departement)
+                villes.push(casinoData.ville)
             })
         );
 
+        console.log(names)
 
-        let filteredResearches = [...new Set(researches.flat())]
 
-        res.status(200).json({ "msg": "the casinos researches", "data": filteredResearches });
+        // let filteredResearches = [...new Set(researches.flat())]
+
+        data = {
+            names :  [...new Set(names.filter(n => n))],
+            adresses : [...new Set(adresses.filter(n => n))],
+            regions : [...new Set(regions.filter(n => n))],
+            groupes : [...new Set(groupes.filter(n => n))],
+            departements : [...new Set(departements.filter(n => n))],
+            villes : [...new Set(villes.filter(n => n))]
+        }
+
+        res.status(200).json({ "msg": "the casinos researches", "data": data });
 
     } catch (err) {
 
@@ -53,7 +76,7 @@ router.get("/games/", async (req, res) => {
         let filteredMachines = [...new Set(machinesData.flat())]
         let filteredTables = [...new Set(tablesData.flat())]
 
-        res.status(200).json({ "msg": "the games researches", "data": [...filteredMachines, ...filteredTables] });
+        res.status(200).json({ "msg": "the games researches", "data" : {games : filteredMachines, tables : filteredTables} });
 
     } catch (err) {
 

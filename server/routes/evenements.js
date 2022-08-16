@@ -37,7 +37,7 @@ router.post("/", async (req, res) => {
     res.status(500).json(err)
   }
 });
-
+ 
 // get evenement 
 router.get("/evenement/:id", async (req, res) => {
 

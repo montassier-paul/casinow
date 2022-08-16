@@ -25,6 +25,11 @@ const EvenementSchema = new mongoose.Schema(
         required : true,
       },
 
+      month : {
+        type : String, 
+        required : true,
+      },
+
       opening : {
         type :  String,
       },
