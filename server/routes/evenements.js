@@ -16,6 +16,7 @@ router.post("/", async (req, res) => {
       const newEvenement = new Evenement({
         casinoId: req.body.casinoId,
         date: req.body.date,
+        title : req.body.title, 
       });
 
 
