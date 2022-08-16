@@ -39,32 +39,53 @@ router.post("/", async (req, res) => {
 // get trend 
 router.get("/trend/:id", async (req, res) => {
 
-    try {
+  try {
 
-      projection = {}
+    projection = {}
 
-      Object.entries(req.query).forEach(([key, value]) => {
-        console.log(key, value);
-        if (key !== "limit" & key !== "offset") {
-          projection[key] = value
+    Object.entries(req.query).forEach(([key, value]) => {
+      console.log(key, value);
+      if (key.substring(0, 2) === "p_") {
+        projection[key.substring(2,)] = Number(value)
+      }
+    })
+
+
+    const trend = await Trend.findById(req.params.id, projection);
+
+    if (trend) {
+      if (Number(req.query.casinoData) === 1) {
+
+        const casino = await Casino.findById(trend.casinoId, { name: 1, adresse: 1 });
+
+        if (casino) {
+
+          const data = { ...{ CasinoName: casino.name, CasinoAdresse: casino.adresse }, ...trend._doc }
+
+          res.status(200).json({ "msg": "the trend sought", "data": data });
         }
-      })
+        else {
+          res.status(200).json({ "msg": "the trend sought, but couldn't access to casino data. Check if you asked casinoId in projection parameters ", "data": trend });
+        }
 
 
-      const trend = await Trend.findById(req.params.id, projection);
-
-      if(trend){
-        res.status(200).json({"msg" : "the trend sought", "data" : trend});
       }
-      else{
-        res.status(404).json({"msg" : "this trend id doesn't exist"});
+      else {
+        res.status(200).json({ "msg": "the trend sought", "data": trend });
       }
-
-    } catch (err) {
-
-      res.status(500).json(err);
+    
+      
     }
-  });
+    else {
+      res.status(404).json({ "msg": "this trend id doesn't exist" });
+    }
+
+  } catch (err) {
+
+    res.status(500).json(err);
+  }
+});
+
 
 // update trend; cannot update casinoID 
 router.put("/:id", async (req, res) => {
@@ -129,12 +150,12 @@ router.delete("/:id",async (req, res) => {
 
   });
 
-// get all trend with parameter
+// get all trend with parameter 
 router.get("/full/", async (req, res) => {
 
-    try {
+  try {
 
-      projection = {}
+    projection = {}
     query = {}
 
     // Update header text
@@ -146,19 +167,37 @@ router.get("/full/", async (req, res) => {
       }
 
       if (key.substring(0,2) === "q_") {
-        query[key.substring(2,)] = Number(value)
+        query[key.substring(2,)] = String(value).split(",")
       }
 
 
     });
 
-      const trends = await Trend.find(query, projection).skip(req.query.offset).limit(req.query.limit); 
-      res.status(200).json({"msg" : "all Trends data", "data" : trends});
+    const trends = await Trend.find(query, projection).skip(req.query.offset).limit(req.query.limit);
+    
+    if (Number(req.query.casinoData) === 1) {
 
-    } catch (err) {
+      const newTrends = await Promise.all(trends.map(async (machine) => {
+        let casino = await Casino.findById(machine.casinoId, { name: 1, adresse: 1 });
+        return { ...{ CasinoName: casino.name, CasinoAdresse: casino.adresse }, ...machine._doc }
+      }))
 
-      res.status(500).json(err);
+      if (newTrends) {
+        res.status(200).json({ "msg": "all trends data", "data": newTrends });
+      }
+      else {
+        res.status(200).json({ "msg": "all trends data, but couldn't access to casino data. Check if you asked casinoId in projection parameters", "data": trends });
+      }
     }
-  });
+    else {
+      res.status(200).json({ "msg": "all trends data", "data": trends });
+    }
+
+  } catch (err) {
+
+    res.status(500).json(err);
+  }
+});
+
 
 module.exports = router; 

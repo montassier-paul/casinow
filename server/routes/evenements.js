@@ -45,9 +45,9 @@ router.get("/evenement/:id", async (req, res) => {
     projection = {}
 
     Object.entries(req.query).forEach(([key, value]) => {
-      console.log(key, value);
-      if (key !== "limit" & key !== "offset") {
-        projection[key] = value
+      // console.log(key, value);
+      if (key.substring(0, 2) === "p_") {
+        projection[key.substring(2,)] = Number(value)
       }
     })
 
@@ -55,7 +55,27 @@ router.get("/evenement/:id", async (req, res) => {
     const evenement = await Evenement.findById(req.params.id, projection);
 
     if (evenement) {
-      res.status(200).json({ "msg": "the evenement sought", "data": evenement });
+      if (Number(req.query.casinoData) === 1) {
+
+        const casino = await Casino.findById(evenement.casinoId, { name: 1, adresse: 1 });
+
+        if (casino) {
+
+          const data = { ...{ CasinoName: casino.name, CasinoAdresse: casino.adresse }, ...evenement._doc }
+
+          res.status(200).json({ "msg": "the evenement sought", "data": data });
+        }
+        else {
+          res.status(200).json({ "msg": "the evenement sought, but couldn't access to casino data. Check if you asked casinoId in projection parameters ", "data": evenement });
+        }
+
+
+      }
+      else {
+        res.status(200).json({ "msg": "the evenement sought", "data": evenement });
+      }
+    
+      
     }
     else {
       res.status(404).json({ "msg": "this evenement id doesn't exist" });
@@ -141,20 +161,44 @@ router.get("/full/", async (req, res) => {
     // Update header text
 
     Object.entries(req.query).forEach(([key, value]) => {
-      console.log(key, value);
+      // console.log(key, value);
       if (key.substring(0,2) === "p_") {
         projection[key.substring(2,)] = Number(value)
       }
 
       if (key.substring(0,2) === "q_") {
-        query[key.substring(2,)] = Number(value)
+        query[key.substring(2,)] = String(value).split(",")
       }
 
 
     });
 
-    const evenements = await Evenement.find(query, projection).skip(req.query.offset).limit(req.query.limit);
-    res.status(200).json({ "msg": "all evenements data", "data": evenements });
+    const evenements = await Evenement.find(query, projection).skip(req.query.offset).limit(req.query.limit).then((events) => {
+      let today =  new Date()
+      const filteredEvents = events.filter((event) => {
+        return(new Date(event.date) > today)
+      })
+      return filteredEvents
+    }); 
+
+    
+    if (Number(req.query.casinoData) === 1) {
+
+      const newEvenements = await Promise.all(evenements.map(async (machine) => {
+        let casino = await Casino.findById(machine.casinoId, { name: 1, adresse: 1 });
+        return { ...{ CasinoName: casino.name, CasinoAdresse: casino.adresse }, ...machine._doc }
+      }))
+
+      if (newEvenements) {
+        res.status(200).json({ "msg": "all evenements data", "data": newEvenements });
+      }
+      else {
+        res.status(200).json({ "msg": "all evenements data, but couldn't access to casino data. Check if you asked casinoId in projection parameters", "data": evenements });
+      }
+    }
+    else {
+      res.status(200).json({ "msg": "all evenements data", "data": evenements });
+    }
 
   } catch (err) {
 

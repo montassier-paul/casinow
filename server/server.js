@@ -18,6 +18,7 @@ const evenementsRoute = require('./routes/evenements')
 const machinesRoute = require('./routes/machines')
 const tablesRoute = require('./routes/tables')
 const trendsRoute = require('./routes/trends')
+const researchRoute = require('./routes/researchBar')
 
 dotenv.config();
 const port = process.env.PORT || 3000
@@ -55,6 +56,7 @@ app.use("/api/evenements", evenementsRoute);
 app.use("/api/machines", machinesRoute);
 app.use("/api/tables", tablesRoute);
 app.use("/api/trends", trendsRoute);
+app.use("/api/research", researchRoute);
 
 
 
@@ -126,7 +128,7 @@ Machine.watch().
 
 Table.watch().
   on('change', async (data) => {
-
+ 
     switch (data.operationType) {
       case 'update':
         io.emit('table update',

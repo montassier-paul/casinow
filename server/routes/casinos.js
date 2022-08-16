@@ -67,6 +67,8 @@ router.get("/casino/:id", async (req, res) => {
   }
 });
 
+
+
 // update a casino by id
 router.put("/casino/:id", async (req, res) => {
 
@@ -111,6 +113,32 @@ router.put("/casino/tournament/:id", async (req, res) => {
         res.status(404).json({ "msg": "This tournament doens't exist" });
       }
 
+
+    }
+  } catch (err) {
+    res.status(500).json(err);
+  }
+
+});
+
+// update images from casino 
+router.put("/casino/images/:id", async (req, res) => {
+
+  try {
+    const casino = await Casino.findById(req.params.id);
+
+    if (casino) {
+      if (!casino.images.includes(req.body.image)) {
+        await casino.updateOne({ $push: { images: req.body.image } });
+        res.status(200).json({ "msg": "image has been added" });
+      } else {
+        await casino.updateOne({ $pull: { tournamentsId: req.body.image } });
+        res.status(200).json({ "msg": "image has been removed" });
+      }
+    }
+    else {
+
+      res.status(404).json({ "msg": "This casino doens't exist" });
 
     }
   } catch (err) {
@@ -316,7 +344,7 @@ router.delete("/casino/:id", async (req, res) => {
 });
 
 // get all casino with query - projection - scroll management
-router.get("/full/", async (req, res) => {
+router.get("/full/casinos", async (req, res) => {
 
 
   try {
@@ -328,12 +356,12 @@ router.get("/full/", async (req, res) => {
 
     Object.entries(req.query).forEach(([key, value]) => {
       console.log(key, value);
-      if (key.substring(0,2) === "p_") {
+      if (key.substring(0, 2) === "p_") {
         projection[key.substring(2,)] = Number(value)
       }
 
-      if (key.substring(0,2) === "q_") {
-        query[key.substring(2,)] = Number(value)
+      if (key.substring(0, 2) === "q_") {
+        query[key.substring(2,)] = String(value).split(",")
       }
 
 
@@ -348,6 +376,8 @@ router.get("/full/", async (req, res) => {
     res.status(500).json(err);
   }
 });
+
+
 
 
 module.exports = router; 

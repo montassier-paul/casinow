@@ -49,16 +49,37 @@ router.get("/machine/:id", async (req, res) => {
     projection = {}
 
     Object.entries(req.query).forEach(([key, value]) => {
-      console.log(key, value);
-      if (key !== "limit" & key !== "offset") {
-        projection[key] = value
+      // console.log(key, value);
+      if (key.substring(0, 2) === "p_") {
+        projection[key.substring(2,)] = Number(value)
       }
     })
 
     const machine = await Machine.findById(req.params.id, projection);
 
+
     if (machine) {
-      res.status(200).json({ "msg": "the machine sought", "data": machine });
+
+      if (Number(req.query.casinoData) === 1) {
+
+        const casino = await Casino.findById(machine.casinoId, { name: 1, adresse: 1 });
+
+        if (casino) {
+
+          const data = { ...{ CasinoName: casino.name, CasinoAdresse: casino.adresse }, ...machine._doc }
+
+          res.status(200).json({ "msg": "the machine sought", "data": data });
+        }
+        else {
+          res.status(200).json({ "msg": "the machine sought, but couldn't access to casino data. Check if you asked casinoId in projection parameters ", "data": machine });
+        }
+
+
+      }
+      else {
+        res.status(200).json({ "msg": "the machine sought", "data": machine });
+      }
+
     }
     else {
       res.status(404).json({ "msg": "this machine id doesn't exist" });
@@ -133,7 +154,7 @@ router.delete("/:id", async (req, res) => {
 
 });
 
-// get all Mmchine with parameter
+// get all Machine with parameter
 router.get("/full/", async (req, res) => {
 
   try {
@@ -143,20 +164,45 @@ router.get("/full/", async (req, res) => {
     // Update header text
 
     Object.entries(req.query).forEach(([key, value]) => {
-      console.log(key, value);
-      if (key.substring(0,2) === "p_") {
+      // console.log(key, value);
+      if (key.substring(0, 2) === "p_") {
         projection[key.substring(2,)] = Number(value)
       }
 
-      if (key.substring(0,2) === "q_") {
-        query[key.substring(2,)] = Number(value)
+      if (key.substring(0, 2) === "q_") {
+        query[key.substring(2,)] = String(value).split(",")
+
       }
 
+    })
 
-    });
 
-    const machines = await Machine.find(query, projection).skip(req.query.offset).limit(req.query.limit);
-    res.status(200).json({ "msg": "all Machines data", "data": machines });
+
+    const machines = await Machine.find(query, projection).sort({ jackpot: -1 }).skip(req.query.offset).limit(req.query.limit);
+
+    if (Number(req.query.casinoData) === 1) {
+
+      const newMachines = await Promise.all(machines.map(async (machine) => {
+        let casino = await Casino.findById(machine.casinoId, { name: 1, adresse: 1 });
+        return { ...{ CasinoName: casino.name, CasinoAdresse: casino.adresse }, ...machine._doc }
+      }))
+
+      if (newMachines) {
+        res.status(200).json({ "msg": "all Machines data", "data": newMachines });
+      }
+      else {
+        res.status(200).json({ "msg": "all Machines data, but couldn't access to casino data. Check if you asked casinoId in projection parameters", "data": machines });
+      }
+    }
+    else {
+      res.status(200).json({ "msg": "all Machines data", "data": machines });
+    }
+
+
+
+
+
+
 
   } catch (err) {
 

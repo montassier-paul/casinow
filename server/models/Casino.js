@@ -16,6 +16,10 @@ const CasinoSchema = new mongoose.Schema(
         type : String, 
       },
 
+      groupe : {
+        type : String, 
+      },
+
       departement : {
         type : String, 
       },
@@ -56,9 +60,15 @@ const CasinoSchema = new mongoose.Schema(
         type : String, 
       },
 
-      img : {
+      imgCover : {
         type : String, 
       },
+
+      images : {
+        type : [String], 
+        default : []
+
+      }, 
 
       tournamentsId : {
         type :[String], 
