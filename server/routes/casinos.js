@@ -344,7 +344,7 @@ router.delete("/casino/:id", async (req, res) => {
 });
 
 // get all casino with query - projection - scroll management
-router.get("/full/casinos", async (req, res) => {
+router.get("/full/", async (req, res) => {
 
 
   try {
