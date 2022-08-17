@@ -21,12 +21,14 @@ const EvenementSchema = new mongoose.Schema(
       },
 
       date : {
-        type : String, 
+        type : String,  
         required : true,
       },
 
       month : {
         type : String, 
+        enum : ["January", "February", "March", "April", "May", "June", "July",
+        "August", "September", "October", "November", "December"],
         required : true,
       },
 

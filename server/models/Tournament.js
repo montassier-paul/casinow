@@ -16,9 +16,17 @@ const TournamentSchema = new mongoose.Schema(
       },
 
       type : {
-        type : String, 
+        type : String,
+        enum : ["regular", "exceptional"], 
         required : true
-      },
+      }, 
+
+      filterDate : {
+        type : String, 
+        enum : ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday","January", "February", "March", "April", "May", "June", "July",
+          "August", "September", "October", "November", "December"], 
+        required : true,
+      }, 
 
       blind : {
         type : Number, 
