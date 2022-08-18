@@ -15,9 +15,10 @@ router.post("/", async (req, res) => {
 
       const newTournament = new Tournament({
         casinoId: req.body.casinoId,
-        date: req.body.date,
+        date: req.body.date? new Date(req.body.date) : undefined,
         title: req.body.title,
         type: req.body.type, 
+        filterDate : req.body.filterDate,
       });
 
 
@@ -158,9 +159,12 @@ router.get("/full/", async (req, res) => {
   try {
 
     projection = {}
-    query = {}
 
-    // Update header text
+    query = {
+      date : { $gt: new Date()}
+    }
+
+  
 
     Object.entries(req.query).forEach(([key, value]) => {
       console.log(key, value);
@@ -175,19 +179,7 @@ router.get("/full/", async (req, res) => {
 
     });
 
-    const tournaments = await Tournament.find(query, projection).skip(req.query.offset).limit(req.query.limit).then((tournaments) => {
-      let today =  new Date()
-      const filteredTournaments = tournaments.filter((tournament) => {
-        if(tournament.type === "regular"){
-          return true
-        }
-        else {
-          return(new Date(tournament.date) > today)
-        }
-        
-      })
-      return filteredTournaments
-    });
+    const tournaments = await Tournament.find(query, projection).sort({date : 1}).skip(req.query.offset).limit(req.query.limit)
 
 
     if (Number(req.query.casinoData) === 1) {
