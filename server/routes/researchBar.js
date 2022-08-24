@@ -29,7 +29,7 @@ router.get("/casinos/", async (req, res) => {
             })
         );
 
-        console.log(names)
+        // console.log(names)
 
 
         // let filteredResearches = [...new Set(researches.flat())]

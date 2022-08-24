@@ -40,7 +40,7 @@ const TournamentSchema = new mongoose.Schema(
       date : {
         type : Date, 
         required : true,
-        default : new Date(8640000000000000)
+        default : new Date(8640000000000000), 
       },
 
       opening : {

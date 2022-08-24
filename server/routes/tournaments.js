@@ -20,7 +20,7 @@ router.post("/", async (req, res) => {
         type: req.body.type, 
         filterDate : req.body.filterDate,
       });
-
+ 
 
       const tournament = await newTournament.save();
       await casino.updateOne({ $push: { tournamentsId: tournament._id } });

@@ -5,6 +5,7 @@ const Evenement = require("../models/Evenement")
 const Table = require("../models/Table")
 const Machine = require("../models/Machine")
 const Trend = require("../models/Trend")
+const upload = require("../imagesUpload/imageUpload")
 
 
 
@@ -69,9 +70,10 @@ router.get("/casino/:id", async (req, res) => {
 
 
 
-// update a casino by id
-router.put("/casino/:id", async (req, res) => {
 
+// update a casino by id
+router.put("/casino/:id",  async (req, res) => {
+  
   try {
     const casino = await Casino.findById(req.params.id);
     if (casino) {
@@ -122,18 +124,29 @@ router.put("/casino/tournament/:id", async (req, res) => {
 });
 
 // update images from casino 
-router.put("/casino/images/:id", async (req, res) => {
+router.put("/casino/images/:id", upload.single('image'), async (req, res) => {
+
 
   try {
-    const casino = await Casino.findById(req.params.id);
-
+    
+    const casino = await Casino.findById(req.params.id); 
+    
     if (casino) {
-      if (!casino.images.includes(req.body.image)) {
-        await casino.updateOne({ $push: { images: req.body.image } });
-        res.status(200).json({ "msg": "image has been added" });
-      } else {
-        await casino.updateOne({ $pull: { tournamentsId: req.body.image } });
+
+
+      if(req.file){
+
+        await casino.updateOne({ $push: { images: req.file.location } });
+        res.status(200).json({ "msg": "image has been added" }); 
+      }
+      else if(req.body.imageLocation && casino.images.includes(req.body.imageLocation)){
+
+        await casino.updateOne({ $pull: { images: req.body.imageLocation } });
         res.status(200).json({ "msg": "image has been removed" });
+
+      }
+      else {
+        res.status(404).json({ "msg": "No image to deal with" });
       }
     }
     else {
@@ -147,7 +160,10 @@ router.put("/casino/images/:id", async (req, res) => {
 
 });
 
+
 //  update machine from casino 
+
+
 router.put("/casino/machine/:id", async (req, res) => {
 
   try {
