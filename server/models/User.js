@@ -12,11 +12,13 @@ const UserSchema = new mongoose.Schema(
 
       numTel : {
         type : Number, 
+        required : true, 
+        unique : true, 
       },
 
-      following : {
-        type : {String : [String]}, 
-        default : {}
+      followings : {
+        type :Array, 
+        default : []
       },
 
       region : {

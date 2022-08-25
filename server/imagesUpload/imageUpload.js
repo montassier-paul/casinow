@@ -1,17 +1,20 @@
 const aws = require('aws-sdk');
 const multer = require('multer');
 const multerS3 = require('multer-s3');
-const dotenv = require("dotenv");
-dotenv.config();
+const path = require('path')
+require('dotenv').config({ path: path.resolve(__dirname, "../.env") })
+
+
 
 aws.config.update({
-  secretAccessKey: "Lu6Xp4y81Cu3OaJWyQEVZ48H6DHYgEDjLMDXnmQ5",
-  accessKeyId: "AKIA5OGCNTLUOTXYRHWC",
-  region: 'us-east-1'
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  region: process.env.AWS_REGION
 });
 
 
 const s3 = new aws.S3();
+
 
 const fileFilter = (req, file, cb) => {
   if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
@@ -26,7 +29,7 @@ const upload = multer({
   storage: multerS3({
     acl:"public-read-write", 
     s3,
-    bucket: "casinowbucket",
+    bucket:process.env.AWS_BUCKET,
     contentType: multerS3.AUTO_CONTENT_TYPE, 
     metadata: function (req, file, cb) {
       cb(null, {fieldName: 'TESTING_METADATA'});

@@ -17,6 +17,9 @@ const MachineSchema = new mongoose.Schema(
         required : true,
       },
 
+      lastJackpotNotification : {
+        type : Number
+      }
     },
     { timestamps: true }
   );

@@ -124,8 +124,8 @@ router.put("/casino/tournament/:id", async (req, res) => {
 });
 
 // update images from casino 
-router.put("/casino/images/:id", upload.single('image'), async (req, res) => {
-
+router.put("/casino/images/:id", upload.single("image"), async (req, res) => {
+  console.log("ici")
 
   try {
     
@@ -133,6 +133,7 @@ router.put("/casino/images/:id", upload.single('image'), async (req, res) => {
     
     if (casino) {
 
+      console.log(req.file)
 
       if(req.file){
 
