@@ -1,68 +1,58 @@
 import { createSlice } from '@reduxjs/toolkit'
-import type { PayloadAction } from '@reduxjs/toolkit'
+import { userState } from '../components/interface'
 
-export interface userState {
-    firstName: string,
-    familyName: string,
-    telNumber: string,
-    smsBool: boolean,
-
-
-    followings: {
-        clubId : string, 
-        clubName : string, 
-        clubAdresse : string, 
-        purpose : string
-    }[]
-
-}
 
 const initialState: userState = {
-    firstName: "Pierre",
-    familyName: "Montassier",
-    telNumber: "0651643417",
+    isLoading: false,
+    hasErrors: false,
+    firstName: "",
+    familyName: "",
+    numTel: "",
     smsBool: false,
     followings: []
 }
-
-
 
 export const userSlice = createSlice({
     name: 'user',
     initialState,
     reducers: {
-        updateUserInfo: (state, action: PayloadAction<{ firstName: string, familyName: string, telNumber: string, smsBool: boolean }>) => {
+        getUser: state => {
 
-            if (action.payload.firstName !== state.firstName) {
-                state.firstName = action.payload.firstName
+            state.isLoading = true
+        },
+        getUserFaillure: state => {
+
+            state.isLoading = false
+            state.hasErrors = true
+
+        },
+        updateUserInfo: (state, { payload }: { payload: { firstName: string, familyName: string, numTel: string } }) => {
+
+            if (payload.firstName !== state.firstName) {
+                state.firstName = payload.firstName
             }
-            if (action.payload.familyName !== state.familyName) {
-                state.familyName = action.payload.familyName
+            if (payload.familyName !== state.familyName) {
+                state.familyName = payload.familyName
             }
-            if (action.payload.telNumber !== state.telNumber) {
-                state.telNumber = action.payload.telNumber
-            }
-            if (state.smsBool !== action.payload.smsBool) {
-                state.smsBool = action.payload.smsBool
+            if (payload.numTel !== state.numTel) {
+                state.numTel = payload.numTel
             }
 
-
+            state.isLoading = false
 
         },
 
-        addFollowings: (state, action: PayloadAction<{ clubId: string, clubName: string, clubAdresse: string, purpose : string }>) => {
+        addFollowings: (state, { payload }: { payload: { casinoId?: string, casinoName?: string, casinoAdresse?: string, purpose?: "jackpot" | "events" | "tournaments" } }) => {
 
-            state.followings.push({ clubId: action.payload.clubId, clubName: action.payload.clubName, clubAdresse: action.payload.clubAdresse, purpose : action.payload.purpose })
-
+            state.followings.push({ casinoId: payload.casinoId, casinoName: payload.casinoName, casinoAdresse: payload.casinoAdresse, purpose: payload.purpose })
+            state.isLoading = false
         },
 
-        removeFollowings: (state, action: PayloadAction<{ clubId: string, purpose : string }>) => {
+        removeFollowings: (state, { payload }: { payload: { casinoId?: string, purpose?: "jackpot" | "events" | "tournaments" } }) => {
 
             state.followings = state.followings.filter((follow) =>
-                follow.clubId !== action.payload.clubId|| follow.purpose !== action.payload.purpose)
-
-
-
+                follow.casinoId !== payload.casinoId || follow.purpose !== payload.purpose)
+            state.isLoading = false
         },
         resetfirstName: (state) => {
             state.firstName = ""
@@ -73,17 +63,24 @@ export const userSlice = createSlice({
 
         },
         resetTelNumber: (state) => {
-            state.telNumber = ""
+            state.numTel = ""
 
         },
         resetSmsBool: (state) => {
             state.smsBool = false
 
         },
+        updateSmsBool: (state) => {
+            state.smsBool = !state.smsBool
+
+        },
+        endLoading: (state) => {
+            state.isLoading = false
+        }
     },
 })
 
 // Action creators are generated for each case reducer function
-export const { updateUserInfo, resetSmsBool, resetTelNumber, resetfamilyName, resetfirstName, removeFollowings, addFollowings } = userSlice.actions
+export const { getUser, getUserFaillure, endLoading, updateSmsBool, updateUserInfo, resetSmsBool, resetTelNumber, resetfamilyName, resetfirstName, removeFollowings, addFollowings } = userSlice.actions
 
 export default userSlice.reducer

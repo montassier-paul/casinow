@@ -1,33 +1,35 @@
 import { View, Text, FlatList } from 'react-native'
 import React from 'react'
 import { UserFollowingsCard } from '../Cards'
-import type { RootState } from '../../redux/store'
-import { useSelector, useDispatch } from 'react-redux'
-import { removeFollowings } from '../../redux/userSlice'
+import { RootState, useAppDispatch, useAppSelector } from '../../redux/store'
+import { fetchData } from '../../redux/api'
+import { ContextTypes } from '../interface'
+import { FONT, SIZES } from '../../constants'
+import { propsUnfollowFollowingsUser } from '../interface'
 
-
-
-
-
-interface unfollowprops {
-    clubId: string, 
-    purpose : string 
-    
-  }
 
 
 const UserFollowings = () => {
 
-    const user = useSelector((state: RootState) => state.user)
-    const dispatch = useDispatch()
+    const user = useAppSelector((state: RootState) => state.user)
+    const dispatch = useAppDispatch()
 
 
 
 
-    const handleUnfollow = ({clubId, purpose} : unfollowprops) => {
-        dispatch(removeFollowings({clubId, purpose}))
-    
-      }
+    const handleUnfollow = async ({ casinoId, purpose }: propsUnfollowFollowingsUser) => {
+
+
+        await dispatch(fetchData({
+            context: ContextTypes.user,
+            userApiParams: {
+                context : "unfollow", remote: user.smsBool,
+                numTel: user.numTel, casinoId: casinoId, purpose: purpose
+            }
+        }
+        ))
+
+    }
 
 
     return (
@@ -44,7 +46,7 @@ const UserFollowings = () => {
                 renderItem={({ item }) => <UserFollowingsCard data={item} handleUnfollow={handleUnfollow} />}
                 showsVerticalScrollIndicator={false}
                 ListHeaderComponent={<Text style={{
-                    alignSelf: 'center', marginTop: 5
+                    alignSelf: 'center', marginTop: 5, fontFamily : FONT.Title, fontSize : SIZES.TextMiddle
                 }}> Vous suivez actuellement : </Text>}
                 ListFooterComponent={<View style={{ height: 100 }} />}
             />

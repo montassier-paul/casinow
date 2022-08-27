@@ -34,8 +34,6 @@ const io = require("socket.io")(http, {
   }
 });
 
-console.log(process.env.MONGO_URL === 'mongodb+srv://user:l9aWUU4vDGMWpb2z@casinow.nf48a.mongodb.net/casinow?retryWrites=true&w=majority')
-
 // connect to the mongoDB database
 mongoose.connect(
   process.env.MONGO_URL,

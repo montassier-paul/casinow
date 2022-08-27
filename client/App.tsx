@@ -4,7 +4,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import React from 'react';
-import { Home, Trends, Casinos, Events, Learn, Poker, Games, RootStackParamList, User, Settings, Direct } from './screens';
+import { Home, Casinos, Events, Learn, Poker, Games, RootStackParamList, User, Settings, Direct } from './screens';
 import {
   useFonts,
   Barlow_100Thin,
@@ -34,7 +34,7 @@ const RootStack = createStackNavigator<RootStackParamList>();
 
 export default function App() {
 
-  let [fontsLoaded] = useFonts({
+  const [fontsLoaded] = useFonts({
     Barlow_100Thin,
     Barlow_100Thin_Italic,
     Barlow_200ExtraLight,
@@ -67,7 +67,6 @@ export default function App() {
             }}
             initialRouteName="Home">
             <RootStack.Screen name="Home" component={Home} />
-            <RootStack.Screen name="Trends" component={Trends} />
             <RootStack.Screen name="Casinos" component={Casinos} />
             <RootStack.Screen name="Events" component={Events} />
             <RootStack.Screen name="Learn" component={Learn} />

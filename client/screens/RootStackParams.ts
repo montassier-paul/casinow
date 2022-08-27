@@ -1,8 +1,5 @@
-
-
 export type RootStackParamList = {
     Home: undefined;
-    Trends: undefined;
     Events: undefined; 
     Games: undefined; 
     Casinos: undefined; 

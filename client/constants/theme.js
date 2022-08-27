@@ -1,10 +1,4 @@
 export const COLORS = {
-  BackgroundOne: "#FCEFFA99",
-  BackgroundTwo: "#FCEFFA",
-  BackgroundDunkel: "#9C07D0",
-  BorderColor: "#9C07D0",
-
-
   White: "#FFFFFF",
   LightPurple: "#FCEFFA",
   LightPurpleTransparent: "#FCEFFA99",
@@ -13,13 +7,11 @@ export const COLORS = {
   Camel: "#fffafa",
   CamelDunkel: "#ffdada",
   Green: "#008000",
-  GreenLight : "#9dffc1",
-  BlueLight:"#92cbff"
+  GreenLight: "#9dffc1",
+  BlueLight: "#92cbff", 
+  BlueDunkel : "#00bfff"
 
 };
-
-
-
 export const FONT = {
 
   TitleBold: 'Barlow_700Bold',
@@ -30,9 +22,6 @@ export const FONT = {
 
 
 }
-
-
-
 export const SIZES = {
 
   HeaderTextSize: 18,

@@ -1,67 +1,80 @@
-import { View, FlatList} from 'react-native'
+import { View, FlatList } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import CasinoScreen from './CasinoScreen'
-import axios from 'axios'
 import { CasinoCard } from '../Cards'
 import { Search } from '../Search'
-import { propsCasino } from '../interface'
+import { propsCasino, ContextTypes } from '../interface'
+import { fetchData } from '../../redux/api'
+import { RootState, useAppDispatch, useAppSelector } from '../../redux/store'
+import { eventsResetState } from '../../redux/eventsSlice'
+import { tournamentsResetState } from '../../redux/tournamentsSlice'
+import { gamesResetState } from '../../redux/gamesSlice'
+import { casinosResetState } from '../../redux/casinosSlice'
 
 
 
 const CasinosMain = () => {
-
-
-
-  const [casinosData, setCasinosData] = useState<propsCasino[]>([]);
   const [casino, setCasino] = useState<propsCasino>()
   const [casinosDataFiltered, setCasinosDataFiltered] = useState<propsCasino[]>([])
   const [serviceSearch, setServiceSearch] = useState('')
   const [placeSearch, setPlaceSearch] = useState('')
   const [displayCasino, setDisplayCasino] = useState(false)
-  const [casinoId, setCasinoId] = useState("")
+  const casinos = useAppSelector((state: RootState) => state.casinos)
+  const dispatch = useAppDispatch()
 
-
-  async function getCasinos() {
-    try {
-      const response = await axios.get('https://casinow.herokuapp.com/api/casinos/full/');
-      setCasinosData(response.data.data)
-    }
-    catch (error) {
-      // console.log(error);
-    }
-  }
 
 
   useEffect(() => {
-    let abortController = new AbortController(); 
-    getCasinos();
-    abortController.abort()
+
+    const paramsEvents = {
+      url: "casinos/full/",
+      params: {},
+      scrollRequest: false,
+      context: ContextTypes.casinos
+    }
+    dispatch(fetchData(paramsEvents))
+
+    return () => {
+      dispatch(eventsResetState())
+      dispatch(tournamentsResetState())
+      dispatch(gamesResetState())
+      dispatch(casinosResetState())
+    }
+
+
+
   }, []);
 
+  const handleClick = (id?: string) => {
 
+
+
+    if (id) {
+      const data = casinos.casinosData.filter((casinoData) => casinoData._id === id)
+      data.length === 1 && setCasino(data[0])
+    }
+    else {
+      setCasino(undefined)
+    }
+
+
+    setDisplayCasino(prev => !prev)
+
+  }
   useEffect(() => {
-    setCasinosDataFiltered(casinosData)
-  }, [casinosData])
+    setCasinosDataFiltered(casinos.casinosData)
+  }, [casinos.casinosData])
 
-
-  useEffect(() => {
-
-    const data = casinosData.filter((casinoData) => casinoData._id === casinoId)
-    data.length ===1 && setCasino(data[0])
-
-  }, [casinoId])
-
-
-  const handleSearch = (value: string, context: string) => {
+  const handleSearch = (value: string, context?: string) => {
 
     if (context === "service") {
       setServiceSearch(value)
 
       if (value.length === 0 && placeSearch.length === 0) {
-        setCasinosDataFiltered(casinosData)
+        setCasinosDataFiltered(casinos.casinosData)
       }
       else {
-        let filteredData = casinosData.filter((casinoData) =>
+        let filteredData = casinos.casinosData.filter((casinoData) =>
           (
             casinoData.adresse.toLocaleLowerCase().includes(placeSearch.toLocaleLowerCase()) ||
             casinoData.departement?.toLocaleLowerCase().includes(placeSearch.toLocaleLowerCase()) ||
@@ -91,18 +104,9 @@ const CasinosMain = () => {
               }).length > 0
               : false)
 
-
-
-
-
-
-
           )
 
         )
-
-
-
 
         if (filteredData.length === 0) {
           setCasinosDataFiltered([])
@@ -113,20 +117,17 @@ const CasinosMain = () => {
 
       }
 
-
-
-
     }
     if (context === "place") {
 
       setPlaceSearch(value)
 
       if (value.length === 0 && serviceSearch.length === 0) {
-        setCasinosDataFiltered(casinosData)
+        setCasinosDataFiltered(casinos.casinosData)
       }
       else {
 
-        let filteredData = casinosData.filter((casinoData) =>
+        let filteredData = casinos.casinosData.filter((casinoData) =>
 
           (
             casinoData.adresse.toLocaleLowerCase().includes(value.toLocaleLowerCase()) ||
@@ -167,9 +168,6 @@ const CasinosMain = () => {
 
         )
 
-
-
-
         if (filteredData.length === 0) {
           setCasinosDataFiltered([])
         } else {
@@ -181,7 +179,6 @@ const CasinosMain = () => {
     }
 
   }
-
 
 
   return (
@@ -196,7 +193,7 @@ const CasinosMain = () => {
       {!displayCasino
         ? <FlatList
           data={casinosDataFiltered}
-          renderItem={({ item }) => <CasinoCard data={item} setCasinoId={setCasinoId} setDisplayCasino={setDisplayCasino} />}
+          renderItem={({ item }) => <CasinoCard data={item} handleClickCard={handleClick} />}
           keyExtractor={(item: propsCasino) => item._id}
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={
@@ -215,7 +212,7 @@ const CasinosMain = () => {
           ListFooterComponent={<View style={{ height: 200 }} />}
         />
 
-        : <CasinoScreen data={casino} setDisplayCasino={setDisplayCasino} />
+        : <CasinoScreen data={casino} handleQuit={handleClick} />
 
       }
     </View>

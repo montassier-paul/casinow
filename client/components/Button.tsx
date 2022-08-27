@@ -1,22 +1,18 @@
-import { View, Text, TouchableOpacity, Image, ImageProps } from 'react-native'
+import {Text, TouchableOpacity, Image} from 'react-native'
 import React from 'react'
-import { COLORS } from '../constants'
+import { COLORS, FONT, SIZES } from '../constants'
+import { propsCircleButton, propsDirectButton } from './interface';
 
-export const Button = () => {
-  return (
-    <View>
-      <Text>Button</Text>
-    </View>
-  )
-}
 
-export const CircleButton = ({handlePress, img} : { handlePress : () => void, img : ImageProps}) => {
+
+
+export const CircleButton = ({data, handlePress} : propsCircleButton) => {
     return (
       <TouchableOpacity
         style={{
           width: 60,
           height: 60,
-          backgroundColor: COLORS.BackgroundTwo,
+          backgroundColor: COLORS.LightPurple,
           position: "absolute",
           left : 10, 
           bottom: 10, 
@@ -27,7 +23,7 @@ export const CircleButton = ({handlePress, img} : { handlePress : () => void, im
         onPress={handlePress}
       >
         <Image
-        source={img}
+        source={data.img}
         resizeMode="contain"
         style={{ width: 24, height: 24 }}
       />
@@ -37,13 +33,14 @@ export const CircleButton = ({handlePress, img} : { handlePress : () => void, im
 
 
 
-export const DirectButton = ({handlePress, input} : { handlePress : () => void, input : string}) => {
+
+export const DirectButton = ({data, handlePress} : propsDirectButton) => {
     return (
       <TouchableOpacity
         style={{
           width: 100,
           height: 60,
-          backgroundColor: "#00bfff",
+          backgroundColor: COLORS.BlueDunkel,
           position: "absolute",
           alignSelf:"center", 
           bottom: 10, 
@@ -54,9 +51,9 @@ export const DirectButton = ({handlePress, input} : { handlePress : () => void, 
         onPress={handlePress}
       >
         <Text style={{
-          fontFamily:"Barlow_700Bold",  
-          fontSize:18
-        }}>{input}</Text>
+          fontFamily:FONT.TitleBold,  
+          fontSize:SIZES.HeaderTextSize
+        }}>{data.input}</Text>
       </TouchableOpacity>
     );
   };

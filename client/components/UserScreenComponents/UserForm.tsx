@@ -2,52 +2,97 @@ import { View, Text, TextInput, TouchableOpacity } from 'react-native'
 import React, { useState } from 'react'
 import { COLORS, FONT } from '../../constants'
 import { UserInfoCard } from '../Cards'
-import type { RootState } from '../../redux/store'
-import { useSelector, useDispatch } from 'react-redux'
-import { updateUserInfo, resetTelNumber, resetfamilyName, resetfirstName } from '../../redux/userSlice'
-
-
-
-
+import { RootState, useAppDispatch, useAppSelector } from '../../redux/store'
+import { fetchData } from '../../redux/api'
+import { ContextTypes } from '../interface'
+import { getUser, resetfamilyName, resetfirstName, updateSmsBool, updateUserInfo } from '../../redux/userSlice'
 
 
 const UserForm = () => {
 
-    const user = useSelector((state: RootState) => state.user)
-    const dispatch = useDispatch()
+    const user = useAppSelector((state: RootState) => state.user)
+    const dispatch = useAppDispatch()
 
     const [firstName, setFirstName] = useState("")
     const [familyName, setFamilyName] = useState("")
     const [telNumber, setTelNumber] = useState("")
-    const [smsBool, setSmsBool] = useState(user.smsBool)
-
     const handleCheckBox = () => {
-        setSmsBool(prev => !prev)
+        dispatch(updateSmsBool())
     }
 
 
-    const handleUpdate = () => {
+    const handleUpdate = async () => {
 
-        const newUserData = {
+        const UserData = {
             firstName: firstName.length !== 0 ? firstName : user.firstName,
             familyName: familyName.length !== 0 ? familyName : user.familyName,
-            telNumber: telNumber.length !== 0 ? telNumber : user.telNumber,
-            smsBool: smsBool
+            numTel: telNumber.length !== 0 ? telNumber : user.numTel,
         }
 
-        dispatch(updateUserInfo(newUserData))
+
+        if (user.smsBool && (user.numTel || telNumber)) {
+            // create or update user 
+            await dispatch(fetchData({
+                context: ContextTypes.user,
+                userApiParams: {
+                    context: "update", remote: user.smsBool,
+                    numTel: telNumber.length !== 0 ? telNumber : user.numTel, body: UserData, followings: user.followings
+                }
+            }))
+        }
+
+        if (!user.smsBool && telNumber) {
+            //delete user
+            await dispatch(fetchData({
+                context: ContextTypes.user,
+                userApiParams: {
+                    context: "delete", remote: user.smsBool,
+                    numTel: user.numTel, body: UserData
+                }
+            }))
+
+        }
+
+        if (user.smsBool && !telNumber) {
+            // cannot receive update without telNumber
+            dispatch(updateSmsBool())
+            dispatch(getUser())
+            dispatch(updateUserInfo(UserData))
+        }
+
+        else {
+
+            await dispatch(fetchData({
+                context: ContextTypes.user,
+                userApiParams: {
+                    context: "update", remote: user.smsBool,
+                    numTel: user.numTel, body: UserData
+                }
+            }))
+
+        }
+
+
         setFirstName("")
         setFamilyName("")
         setTelNumber("")
     }
 
-    const handleRemove = (context: String) => {
+
+
+    const handleRemove = async (context: String) => {
         switch (context) {
             case 'FirstName':
                 dispatch(resetfirstName())
                 break;
             case "Telephone":
-                dispatch(resetTelNumber())
+                await dispatch(fetchData({
+                    context: ContextTypes.user,
+                    userApiParams: {
+                        context: "delete", remote: user.smsBool,
+                        numTel: user.numTel
+                    }
+                }))
                 break;
 
             case "FamilyName":
@@ -70,7 +115,7 @@ const UserForm = () => {
                 fontFamily: FONT.TitleBold,
                 marginTop: 10,
 
-            }}>INFORMATIONS UTILISATEURS</Text>
+            }}>INFORMATIONS UTILISATEURS + {String(user.hasErrors)}</Text>
 
             <View style={{
                 width: "80%",
@@ -79,7 +124,7 @@ const UserForm = () => {
 
                 {user.firstName.length !== 0 && <UserInfoCard data={{ input: user.firstName, context: "FirstName" }} handleRemove={handleRemove} />}
                 {user.familyName.length !== 0 && <UserInfoCard data={{ input: user.familyName, context: "FamilyName" }} handleRemove={handleRemove} />}
-                {user.telNumber.length !== 0 && <UserInfoCard data={{ input: user.telNumber, context: "Telephone" }} handleRemove={handleRemove} />}
+                {user.numTel.length !== 0 && <UserInfoCard data={{ input: user.numTel, context: "Telephone" }} handleRemove={handleRemove} />}
 
 
 
@@ -94,6 +139,7 @@ const UserForm = () => {
                         width: "100%",
                         marginTop: 10,
                         paddingHorizontal: 5,
+                        fontFamily: FONT.Text1
 
 
                     }}
@@ -108,7 +154,8 @@ const UserForm = () => {
                         borderRadius: 10,
                         width: "100%",
                         marginTop: 10,
-                        paddingHorizontal: 5
+                        paddingHorizontal: 5,
+                        fontFamily: FONT.Text1
 
                     }}
                     placeholder="Family Name" />
@@ -124,7 +171,8 @@ const UserForm = () => {
                         borderRadius: 10,
                         width: "100%",
                         marginTop: 10,
-                        paddingHorizontal: 5
+                        paddingHorizontal: 5,
+                        fontFamily: FONT.Text1
 
                     }}
                     placeholder="Tel" />
@@ -148,7 +196,7 @@ const UserForm = () => {
                                 borderWidth: 2,
                                 borderRadius: 5,
                                 marginTop: 10,
-                                backgroundColor: smsBool ? COLORS.Green : COLORS.White,
+                                backgroundColor: user.smsBool ? COLORS.Green : COLORS.White,
 
                             }}>
 
@@ -186,3 +234,4 @@ const UserForm = () => {
 }
 
 export default UserForm
+
