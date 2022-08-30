@@ -47,9 +47,9 @@ router.get("/casino/:id", async (req, res) => {
     projection = {}
 
     Object.entries(req.query).forEach(([key, value]) => {
-      console.log(key, value);
-      if (key !== "limit" & key !== "offset") {
-        projection[key] = value
+      // console.log(key, value);
+      if (key.substring(0, 2) === "p_") {
+        projection[key.substring(2,)] = Number(value)
       }
     })
 

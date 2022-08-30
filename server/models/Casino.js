@@ -60,14 +60,9 @@ const CasinoSchema = new mongoose.Schema(
         type : String, 
       },
 
-      imgCover : {
-        type : String, 
-      },
-
       images : {
         type : [String], 
         default : []
-
       }, 
 
       tournamentsId : {
@@ -98,13 +93,13 @@ const CasinoSchema = new mongoose.Schema(
       hours : {
         type : [], 
         default : [
-          {day : "Monday", opening : "", ending : ""},
-          {day : "Tuesday", opening : "", ending : ""}, 
-          {day : "Wednesday", opening : "", ending : ""}, 
-          {day : "Thursday", opening : "", ending : ""}, 
-          {day : "Friday", opening : "", ending : ""}, 
-          {day : "Saturday", opening : "", ending : ""},  
-          {day : "Sunday", opening : "", ending : ""}, 
+          {day : "Monday", opening : "00:00", ending :  "00:00"},
+          {day : "Tuesday", opening :  "00:00", ending :  "00:00"}, 
+          {day : "Wednesday", opening :  "00:00", ending :  "00:00"}, 
+          {day : "Thursday", opening :  "00:00", ending :  "00:00"}, 
+          {day : "Friday", opening :  "00:00", ending :  "00:00"}, 
+          {day : "Saturday", opening :  "00:00", ending :  "00:00"},  
+          {day : "Sunday", opening :  "00:00", ending :  "00:00"}, 
           
         ]
       },
